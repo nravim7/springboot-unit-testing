@@ -16,6 +16,7 @@ import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfi
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -77,5 +78,30 @@ public class UsersControllerWebLayerTest {
                 createdUser.getEmail(), "The returned user email is incorrect");
 
         Assertions.assertFalse(createdUser.getUserId().isEmpty(), "User Id should not be empty");
+    }
+
+
+    @Test
+    @DisplayName("First name should not be empty")
+    void testCreateUser_whenFirstNameIsEmpty_shouldReturn400StatusCode() throws Exception {
+        //Arrange
+        UserDetailsRequestModel userDetailsRequestModel = new UserDetailsRequestModel();
+        userDetailsRequestModel.setFirstName("");
+        userDetailsRequestModel.setLastName("Nagaraju");
+        userDetailsRequestModel.setEmail("test@gmail.com");
+        userDetailsRequestModel.setPassword("12345678");
+        userDetailsRequestModel.setRepeatPassword("12345678");
+
+        RequestBuilder requestBuilder = MockMvcRequestBuilders.post("/users")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .content(new ObjectMapper().writeValueAsString(userDetailsRequestModel));
+
+        //Act
+        MvcResult mvcResult = mockMvc.perform(requestBuilder).andReturn();
+
+        //Assert
+        Assertions.assertEquals(HttpStatus.BAD_REQUEST.value(), mvcResult.getResponse().getStatus(),
+                "Should have thrown 400 status bad request");
     }
 }
